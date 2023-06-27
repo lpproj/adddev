@@ -5,4 +5,6 @@
 *.inc text working-tree-encoding=CP932 eol=auto
 *.doc text working-tree-encoding=CP932 eol=crlf
 files.sr text working-tree-encoding=CP932 eol=crlf
+Makefile text working-tree-encoding=CP932 eol=auto
+adddev.man text working-tree-encoding=CP932 eol=crlf
 

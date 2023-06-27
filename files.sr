@@ -1,0 +1,10 @@
+このパッケージには以下のファイルがあります。
+
+files.sr	このファイル
+s&p.inc
+adddel.inc
+adddev.asm
+deldev.asm
+makefile
+history.doc
+readme.doc	add255ex.lzh の物と同じ
