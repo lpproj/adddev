@@ -1,0 +1,8 @@
+#
+*.zip binary
+*.lzh binary
+*.asm text working-tree-encoding=CP932 eol=auto
+*.inc text working-tree-encoding=CP932 eol=auto
+*.doc text working-tree-encoding=CP932 eol=crlf
+files.sr text working-tree-encoding=CP932 eol=crlf
+
