@@ -15,7 +15,9 @@ ADDDEV_ID	equ	'adddev.exe v',ADDDEL_VER
 SYSFCBSIZE3	equ	35h
 SYSFCBSIZE4	equ	3bh
 
+	ifndef	ENGLISH
 ENGLISH		equ	0	; メッセージを英語にするなら 1
+	endif
 
 msdos macro
 	int	21h

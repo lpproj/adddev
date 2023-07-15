@@ -26,33 +26,46 @@ AS=tasmx
 #CC=tcc
 !endif
 AFLAGS=/Ml /jMASM /jQUIRKS /jJUMPS /m9
-ASSEMBLE=$(AS) $(AFLAGS) $*,$@;
 
 HIGHLINKEXE=tlink /x /c /n /i $*,$@;
 LINKEXE=tlink /x /c /n $*,$@;
 EXEHIGH=exehigh.exe
 HIGHTOUCH= ./$(EXEHIGH) $@
 
-all : adddev.exe deldev.exe
+# (do not build redundant deldev_e.exe)
+all : adddev.exe adddev_e.exe deldev.exe
 
 adddev.exe : adddev.obj $(EXEHIGH)
+	$(HIGHLINKEXE)
+	$(HIGHTOUCH)
+
+adddev_e.exe : adddev_e.obj $(EXEHIGH)
 	$(HIGHLINKEXE)
 	$(HIGHTOUCH)
 
 deldev.exe : deldev.obj
 	$(LINKEXE)
 
+deldev_e.exe : deldev_e.obj
+	$(LINKEXE)
+
 $(EXEHIGH): exehigh.c
 	$(CC) -e$@ $*.c
 
 adddev.obj : adddev.asm adddel.inc
-	$(ASSEMBLE)
+	$(AS) $(AFLAGS) adddev,$<;
+
+adddev_e.obj : adddev.asm adddel.inc
+	$(AS) $(AFLAGS) /DENGLISH=1 adddev,$<;
 
 deldev.obj : deldev.asm adddel.inc
-	$(ASSEMBLE)
+	$(AS) $(AFLAGS) deldev,$<;
+
+deldev_e.obj : deldev.asm adddel.inc
+	$(AS) $(AFLAGS) /DENGLISH=1 deldev,$<;
 
 clean :
 	-$(RM_F) *.obj $(EXEHIGH)
-	-$(RM_F) adddev.exe
-	-$(RM_F) deldev.exe
+	-$(RM_F) adddev.exe adddev_e.exe
+	-$(RM_F) deldev.exe deldev_e.exe
 
