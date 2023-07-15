@@ -1,0 +1,58 @@
+#
+# MAKEFILE for Borland's make
+#
+# built with:
+#  * MS-DOS fully compatible environment (DOSBox will help you...)
+#  * Borland C++ 2.0 or later (up to 5.0x)
+#  * tasm (guess 2.5 or later. tasmx will be needed for building on DOS)
+#
+# to build on DOS environment:
+#       make -fmakefile.bor
+#
+# on Windows NT~11 (x86/x64) with Borland C++ 4.x/5.0x:
+#       make -f makefile.bor -DWIN32
+#
+
+#RM_F=rm -f
+RM_F=del
+
+!if $d(WIN32)
+AS=tasm32
+CC=bcc32 -tWC
+!else
+AS=tasm
+AS=tasmx
+#CC=bcc
+#CC=tcc
+!endif
+AFLAGS=/Ml /jMASM /jQUIRKS /jJUMPS /m9
+ASSEMBLE=$(AS) $(AFLAGS) $*,$@;
+
+HIGHLINKEXE=tlink /x /c /n /i $*,$@;
+LINKEXE=tlink /x /c /n $*,$@;
+EXEHIGH=exehigh.exe
+HIGHTOUCH= ./$(EXEHIGH) $@
+
+all : adddev.exe deldev.exe
+
+adddev.exe : adddev.obj $(EXEHIGH)
+	$(HIGHLINKEXE)
+	$(HIGHTOUCH)
+
+deldev.exe : deldev.obj
+	$(LINKEXE)
+
+$(EXEHIGH): exehigh.c
+	$(CC) -e$@ $*.c
+
+adddev.obj : adddev.asm adddel.inc
+	$(ASSEMBLE)
+
+deldev.obj : deldev.asm adddel.inc
+	$(ASSEMBLE)
+
+clean :
+	-$(RM_F) *.obj $(EXEHIGH)
+	-$(RM_F) adddev.exe
+	-$(RM_F) deldev.exe
+
