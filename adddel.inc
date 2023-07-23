@@ -9,8 +9,15 @@ FR_ENV	equ	1
 CMD_CHR	equ	'+'
 CMD_CHS	equ	'*'
 BETA	equ	' '	;; β版なら 'b' 正式版は ' '
+ADDDEL_AUTHORS	equ	'rusu, TELEPUTE -off-, S_HAY and sava'
 ADDDEL_VER	equ	'2.55'
-ADDDEL_DATE	equ	'(95-02-08)'
+ADDDEL_DATE	equ	'(2023-07-18)'
+ADDDEL_PATCH	equ	'p1a'
+	ifdef	DOSBOX
+ADDDEL_EXTRA	equ	' ', ADDDEL_PATCH, ' for DOSBox',
+	else
+ADDDEL_EXTRA	equ	' ', ADDDEL_PATCH,
+	endif
 ADDDEV_ID	equ	'adddev.exe v',ADDDEL_VER
 SYSFCBSIZE3	equ	35h
 SYSFCBSIZE4	equ	3bh
@@ -88,4 +95,5 @@ units	db	?
 EndPtr	dd	?	; 初期化命令実行後にデバドラの終了番地が入る
 BpbPtr	dd	?	; 初期化命令の時に起動された要因の文字列が入る
 blkdevn	db	?
+DispErr	dw	?	; error message flag (DOS5+)
 CmdBlk	ends

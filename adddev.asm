@@ -7,7 +7,7 @@ msdos macro
 	int	21h
 	endm
 
-Vers equ ADDDEV_ID,BETA,ADDDEL_DATE
+Vers equ ADDDEV_ID,BETA,ADDDEL_EXTRA ADDDEL_DATE
 code segment
 	assume	cs:code,ds:nothing,es:nothing,ss:Stack
 ;  以下の変数は 本プログラムでロードしたデバイスドライバを解放するために
@@ -18,7 +18,7 @@ Myname	label	byte
 	org	10h
 IntVect	label	dword		; 割込ベクタ保存バッファ
 	org	80h
-CmdLine db	80 dup(?)
+CmdLine db	80h dup(?)
 	org	100h
 Mynamer	db Vers
 		org	110h
@@ -50,7 +50,7 @@ BreakStatus		db	?	; Break ON/OFF を保存
 DOSflag			db	0	; 6 でDOS6, 5 でDOS5, 4 でDOS4, 3 でDOS3.X
 SearchUMB		db	0	; command.comの後ろを探したかどうか
 systemFCBsize		db	0	; DOS4+ 3bh : DOS3.X 35h
-CommandBlk		CmdBlk	<,,0>	; 初期化コマンドパケット
+CommandBlk		CmdBlk	<size CmdBlk,,0>	; 初期化コマンドパケット
 				even
 MaxIntnlFcb		dw	?
 TopSeg			dw	?
@@ -87,10 +87,23 @@ AssumePathStr	db	'SYS=',0
 DEVICEstring	db	'DEVICE'
 SilentStr	db	'SILENT'
 
+ParentPSP	dw	0
+
+; 2.55 p1
+ThlpMsg dw ThlpMsg+2
+ db	0dh,0ah
+ if ENGLISH
+ db "Type 'adddev /?' to display help."
+ else
+ db "adddev /? でヘルプが出ます。"
+ endif
+ db 0dh,0ah
+ db 0
+
 UsgMsg dw UsgMsg+2
  db	0dh,0ah
 if ENGLISH
- db "Usage of ",ADDDEV_ID,BETA,"(rusu, TELEPUTE -off- and S_HAY)",0dh,0ah
+ db "Usage of ",ADDDEV_ID,BETA,ADDDEL_EXTRA "(",ADDDEL_AUTHORS,")",0dh,0ah
  db "  1.  Make a text file like config.sys which describes device drivers to be",0dh,0ah
  db "      configured.",0dh,0ah
  db "      The SPACEs and TABs at the head of any line are ignored.",0dh,0ah
@@ -115,7 +128,7 @@ if ENGLISH
  db CMD_CHR
  db "a:\mouse.sys -B",0dh,0ah
 else
- db	'使用法: ',ADDDEV_ID,BETA,'(rusu, TELEPUTE -off- and S_HAY)',0dh,0ah
+ db	'使用法: ',ADDDEV_ID,BETA,ADDDEL_EXTRA '(',ADDDEL_AUTHORS,')',0dh,0ah
  db	' 1.config.sys に記述するのと同様に組み込みたいデバイスドライバ',0dh,0ah
  db	'   ファイルを任意の名前のファイルに記述する。 記述に関して行頭',0dh,0ah
  db	'   の空白、タブコードは無視する。それ以外の文字で最初に # が有',0dh,0ah
@@ -185,6 +198,8 @@ _proc InitMem
 	msdos							; S_HAY
 	mov	ds, bx				;Current PSP Seg; S_HAY
 	push	ds				;Current PSP Seg; S_HAY
+	mov	ax, word ptr ds:[0016h]	;Parent PSP Seg	; lpproj
+	mov	cs:[ParentPSP], ax				; lpproj
 	mov	es, word ptr ds:[2ch]		;Env       Seg	; S_HAY
 	mov	ah, 49h						; S_HAY
 	msdos							; S_HAY
@@ -235,9 +250,40 @@ _proc InitMem
 e_not_cont:							; S_HAY
 	pop	ds						; S_HAY
 
-	mov	dx,cs
-	mov	ah,55h	; psp copy (dx:segment)
+	push	si
+	mov	si, word ptr es:[0002h]
+	push	es
+	push	bx
+	mov	ah,52h
 	msdos
+	cmp	word ptr es:[bx + 34 + 6], 0	; quick check DOSBox built-in DOS
+	pop	bx
+	_if <e>
+		; DOSBOX は func 55h (Create New PSP) 時にコマンドライン部分を 
+		; コピーしてくれないので自前でやる。 
+		push	cx
+		push	di
+		push	ds
+		mov	ah,62h
+		mov	cx,80h
+		mov	di,cx
+		mov	ds,bx
+		mov	dx,cs
+		mov	es,dx
+		mov	ah,55h	; psp copy (dx:segment)
+		msdos
+		mov	si,cx
+		rep movsb		; copy cmdline to new psp (kludge for DOSBOX)
+		pop	ds
+		pop	di
+		pop	cx
+	_else
+		mov	dx,cs
+		mov	ah,55h	; psp copy (dx:segment)
+		msdos
+	_endif
+	pop	es
+	pop	si
 
 	mov	ax,es:[16h]
 	xchg ax,cs:[16h]
@@ -432,7 +478,7 @@ _proc Err <ErrorNo>	; エラー番号に対応するメッセージを表示す�
 	mov	si, ermsgptr[si]
 	StrOut <<cs, si>>
 
-	_if <<byte ErrorNo be 5>> then <<StrOut <<cs, UsgMsg>>>>
+	_if <<byte ErrorNo be 5>> then <<StrOut <<cs, ThlpMsg>>>>
 	NoResident
 _endp 0
 
@@ -504,7 +550,10 @@ _proc SaveEnv
 	_use <es, ds, ax, bx>
 	mov	ax,3000h	; version check
 	msdos
-	GotoErr <<al l 3> or <al g 6>>, 3			; DOS4+
+	_if <<al e 20>>
+		mov	al, 5		; (32bit OS/2 MVDM as DOS 5.0)
+	_endif
+	GotoErr <<al l 3> or <al g 9>>, 3			; DOS4+
 	mov	byte ptr DOSflag, al				; DOS4+
 	_if <<al e 3>>						; DOS4+
 		mov	byte ptr systemFCBsize, SYSFCBSIZE3	; DOS4+
@@ -713,14 +762,21 @@ _func FindEnvStr <ds, si> <es, di>
 	msdos
 	mov	es,es:[bx-2]	; get 1st MCB segment
 searchEnvBlock:
+	mov	ax,5802h	; get UMB state (DOS 5+)
+	msdos			; return CF=1,AX=1 if error (not DOS5+)
+	cmc
+	sbb	ah,ah
+	and	al,ah
+	and	ax,1		; UMB linked=1, unlinked=0, DOS3/4=0 (to be safe)
+	push	ax
 	_do
 		mov	al,es:[0]
-		GotoErr <<al ne 'Z'> and <al ne 'M'>>,12
+		_exit <<al ne 'Z'> and <al ne 'M'>>
 		_if <<word es:[1] e di>>
-			mov	ax,es
-			inc	ax
-			_if <<ax ne di> and <word es:[3] ge 000ah>>
-				mov	EnvSeg,ax
+			mov	bx,es
+			inc	bx
+			_if <<bx ne di> and <word es:[3] ge 000ah>>
+				mov	EnvSeg,bx
 				_break
 			_endif
 		_endif
@@ -731,6 +787,12 @@ searchEnvBlock:
 		inc	ax
 		mov	es,ax
 	_enddo
+	pop	bx
+	push	ax
+	mov	ax,5803h	; set UMB state
+	msdos
+	pop	ax
+	GotoErr <<al ne 'Z'> and <al ne 'M'>>,12
 
 	_if <<EnvSeg e 0> and <SearchUMB e 0>>
 		mov	SearchUMB,1
@@ -765,13 +827,17 @@ searchEnvBlock:
 			jmp	searchUMBloop
 		_endif
 	_endif
-
 	_if <<EnvSeg e 0>>
 		_if <<DOSflag ge 4>>
 			mov	es,di
 			mov	es,es:[2ch]
 			mov	EnvSeg,es
 		_endif
+	_endif
+	_if <<EnvSeg e 0>>
+		mov	es,ParentPSP
+		mov	es,es:[2ch]
+		mov	EnvSeg,cs
 	_endif
 
 	GotoErr <<EnvSeg e 0>>,12
@@ -835,6 +901,11 @@ _func OpenSpecFile <> <bx>
 	mov	CmdLine[bx]+2,bh	; use bh as 0
 
 	StripBlank <si>
+	_if <<al e '/'> and <<byte ptr [si]> e '?'>>
+		RestoreEnv
+		StrOut <<cs, UsgMsg>>
+		NoResident
+	_endif
 
 	_if <<al e CMD_CHR> or <al e CMD_CHS>>		; -off- さんのアイデア
 		_if <<al e CMD_CHS>> then <<mov Silent,1>>
@@ -1104,7 +1175,7 @@ _endp 0
 code ends
 
 Stack segment Stack
-	dw 256 dup (?)
+	dw 256 dup (0)		; always reserve statically (to be safe)
 Stack ends
 
 	end	_Main

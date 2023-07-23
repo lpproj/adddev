@@ -25,7 +25,7 @@ AS=tasmx
 #CC=bcc
 #CC=tcc
 !endif
-AFLAGS=/Ml /jMASM /jQUIRKS /jJUMPS /m9
+AFLAGS=/Ml /jMASM /jQUIRKS /jJUMPS /jSMART /m9
 
 HIGHLINKEXE=tlink /x /c /n /i $*,$@;
 LINKEXE=tlink /x /c /n $*,$@;

@@ -9,7 +9,7 @@ GotoErr	macro cond, errno
 FOR_OFF	equ	1
 CR	equ	0dh
 LF	equ	0ah
-Vers	equ	'deldev.exe v',ADDDEL_VER,BETA,ADDDEL_DATE,CR,LF,0
+Vers	equ	'deldev.exe v',ADDDEL_VER,BETA,ADDDEL_EXTRA ADDDEL_DATE,CR,LF,0
 
 code	segment
 	assume	cs:code,ds:nothing,es:nothing,ss:Stack
