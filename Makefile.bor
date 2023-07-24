@@ -9,6 +9,9 @@
 # to build on DOS environment:
 #       make -fmakefile.bor
 #
+# to build with *.lst and *.map:
+#       make -fmakefile.bor LIST=1
+#
 # on Windows NT~11 (x86/x64) with Borland C++ 4.x/5.0x:
 #       make -f makefile.bor -DWIN32
 #
@@ -25,10 +28,16 @@ AS=tasmx
 #CC=bcc
 #CC=tcc
 !endif
-AFLAGS=/Ml /jMASM /jQUIRKS /jJUMPS /jSMART /m9
 
-HIGHLINKEXE=tlink /x /c /n /i $*,$@;
-LINKEXE=tlink /x /c /n $*,$@;
+!if $(LIST)
+AFLAGS_LST=/l
+LDFLAGS_MAP=/m
+!endif
+
+AFLAGS=/Ml /jMASM /jQUIRKS /jJUMPS /jSMART /m9 $(AFLAGS_LST)
+
+HIGHLINKEXE=tlink /x /c /n /i $(LDFLAGS_MAP) $*,$@;
+LINKEXE=tlink /x /c /n $(LDFLAGS_MAP) $*,$@;
 EXEHIGH=exehigh.exe
 HIGHTOUCH= ./$(EXEHIGH) $@
 
@@ -65,7 +74,7 @@ deldev_e.obj : deldev.asm adddel.inc
 	$(AS) $(AFLAGS) /DENGLISH=1 deldev,$<;
 
 clean :
-	-$(RM_F) *.obj $(EXEHIGH)
+	-$(RM_F) *.obj $(EXEHIGH) *.lst *.map
 	-$(RM_F) adddev.exe adddev_e.exe
 	-$(RM_F) deldev.exe deldev_e.exe
 
