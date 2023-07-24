@@ -85,7 +85,9 @@ ermsgptr label word
 
 AssumePathStr	db	'SYS=',0
 DEVICEstring	db	'DEVICE'
+sizeofDEVICEstring = $ - DEVICEstring
 SilentStr	db	'SILENT'
+sizeofSilentStr = $ - SilentStr
 
 ParentPSP	dw	0
 
@@ -711,7 +713,7 @@ _func DevInfoScan <> <ax>
 		movsg es, cs
 		dec	si
 		mov	di,offset DEVICEstring
-		mov	cx,size DEVICEstring
+		mov	cx,sizeofDEVICEstring
 		repz cmpsb
 		GotoErr <nz>, 2
 		StripBlank <si> <si,ax>
@@ -739,7 +741,7 @@ _func DevInfoScan <> <ax>
 			_until <<al e 'S'> or <al e 0dh> or <al e 0ah>>
 			dec	si
 			mov	di,offset SilentStr
-			mov	cx,size SilentStr
+			mov	cx,sizeofSilentStr
 			repz cmpsb
 			_if <z> then <<mov Silent,1>>
 		_until <<al e 0dh> or <al e 0ah>>
