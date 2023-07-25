@@ -11,13 +11,9 @@ CMD_CHS	equ	'*'
 BETA	equ	' '	;; β版なら 'b' 正式版は ' '
 ADDDEL_AUTHORS	equ	'rusu, TELEPUTE -off-, S_HAY and sava'
 ADDDEL_VER	equ	'2.55'
-ADDDEL_DATE	equ	'(2023-07-18)'
-ADDDEL_PATCH	equ	'p1a'
-	ifdef	DOSBOX
-ADDDEL_EXTRA	equ	' ', ADDDEL_PATCH, ' for DOSBox',
-	else
-ADDDEL_EXTRA	equ	' ', ADDDEL_PATCH,
-	endif
+ADDDEL_DATE	equ	'(2023-07-25)'
+ADDDEL_PATCH	equ	'p2 '
+ADDDEL_EXTRA	equ	ADDDEL_PATCH,
 ADDDEV_ID	equ	'adddev.exe v',ADDDEL_VER
 SYSFCBSIZE3	equ	35h
 SYSFCBSIZE4	equ	3bh

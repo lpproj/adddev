@@ -86,6 +86,8 @@ ermsgptr label word
 AssumePathStr	db	'SYS=',0
 DEVICEstring	db	'DEVICE'
 sizeofDEVICEstring = $ - DEVICEstring
+HIGHstring	db	'HIGH'
+sizeofHIGHstring = $ - HIGHstring
 SilentStr	db	'SILENT'
 sizeofSilentStr = $ - SilentStr
 
@@ -716,6 +718,14 @@ _func DevInfoScan <> <ax>
 		mov	cx,sizeofDEVICEstring
 		repz cmpsb
 		GotoErr <nz>, 2
+		push	si
+		mov	di,offset HIGHstring
+		mov	cx,sizeofHIGHstring
+		repz cmpsb
+		pop	si
+		_if <z>
+			add	si,sizeofHIGHstring
+		_endif
 		StripBlank <si> <si,ax>
 ;		GotoErr <<al ne '='>>, 2
 ;		StripBlank <si> <si,ax>
@@ -1053,8 +1063,12 @@ _proc InitDevDr <LoadSeg>
 
 		movsg es,cs
 		mov	bx,offset CommandBlk
+		push	si	; to be safe...
+		push	ds
 		call Strategy	; far call (es:bx)
 		call Interrupt	; far call
+		pop	ds
+		pop	si
 
 		test CommandBlk.req_sta,8000h	; check error status
 		GotoErr <nz>, 7
@@ -1064,7 +1078,10 @@ _proc InitDevDr <LoadSeg>
 		mov	ax, word ptr [si].NextLink+2
 		mov	word ptr next+2, ax
 
-		_if <<word [si].Attrib nz 8000h>>,test
+		mov	ax,ds
+		_if <<si ne word CommandBlk.EndPtr> or <ax ne word CommandBlk.EndPtr+2>>,and
+						; ドライバが本当に常駐するのか
+		_c <<word [si].Attrib nz 8000h>>,test
 						; init で BLOCK device に変身したかどうかを調べる
 			inc	NoOfLoadDev
 			mov	CharDev,1
