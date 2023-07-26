@@ -63,7 +63,7 @@ SpecPath		dw	2 dup (WorkingBuffer, ?)
 	strcnst LoadMsg, <'Loading... '>
 	strcnst errmsg0, <>
 	strcnst errmsg1, <07,"Spec file couldn't open">
-	strcnst errmsg2, <07,"missing 'device='">
+	strcnst errmsg2, <07,"invalid command (or missing 'device=')">
 	strcnst errmsg3, <07,"require MS-DOS v3.xx or later">
 	strcnst errmsg4, <07,"missing device driver file name">
 	strcnst errmsg5, <07,"error while loading driver file(may be no file)">
@@ -88,6 +88,8 @@ DEVICEstring	db	'DEVICE'
 sizeofDEVICEstring = $ - DEVICEstring
 HIGHstring	db	'HIGH'
 sizeofHIGHstring = $ - HIGHstring
+REMstring	db	'REM'
+sizeofREMstring = $ - REMstring
 SilentStr	db	'SILENT'
 sizeofSilentStr = $ - SilentStr
 
@@ -711,7 +713,20 @@ _func DevInfoScan <> <ax>
 	movsg ds,cs
 	mov	si,offset DevInfo
 	StripBlank <si> <si,ax>
-	_if <<al a ' '> and <al ne '#'>>
+	_if <<al e REMstring>>
+		movsg es, cs
+		mov	di,offset REMstring + 1
+		mov	cx,sizeofREMstring - 1
+		repz cmpsb
+		GotoErr <nz>, 2
+		lodsb
+		dec	si
+		GotoErr <<al a ' '>>, 2
+		_do
+			lodsb
+		_until <<al e 0dh> or <al e 0ah>>
+		mov	ax,1
+	_elseif <<al a ' '> and <al ne '#'>>
 		movsg es, cs
 		dec	si
 		mov	di,offset DEVICEstring
