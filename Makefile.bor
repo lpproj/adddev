@@ -16,6 +16,9 @@
 #       make -f makefile.bor -DWIN32
 #
 
+D=\\
+
+CP=copy
 #RM_F=rm -f
 RM_F=del
 
@@ -42,11 +45,15 @@ EXEHIGH=exehigh.exe
 HIGHTOUCH= ./$(EXEHIGH) $@
 
 # (do not build redundant deldev_e.exe)
-all : adddev.exe adddev_e.exe deldev.exe
+all : adddev.exe english$(D)adddev.exe deldev.exe
 
 adddev.exe : adddev.obj $(EXEHIGH)
 	$(HIGHLINKEXE)
 	$(HIGHTOUCH)
+
+english$(D)adddev.exe : adddev_e.exe
+	-mkdir english
+	$(CP) adddev_e.exe $<
 
 adddev_e.exe : adddev_e.obj $(EXEHIGH)
 	$(HIGHLINKEXE)
@@ -76,5 +83,6 @@ deldev_e.obj : deldev.asm adddel.inc
 clean :
 	-$(RM_F) *.obj $(EXEHIGH) *.lst *.map
 	-$(RM_F) adddev.exe adddev_e.exe
-	-$(RM_F) deldev.exe deldev_e.exe
+	-$(RM_F) deldev.exe
+	-$(RM_F) english$(D)adddev.exe
 
