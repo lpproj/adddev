@@ -62,6 +62,7 @@ SpecPath		dw	2 dup (WorkingBuffer, ?)
 	strcnst Crlf,	 <0dh,0ah>
 	strcnst LoadMsg, <'Loading... '>
 	strcnst errmsg0, <>
+if ENGLISH
 	strcnst errmsg1, <07,"Spec file couldn't open">
 	strcnst errmsg2, <07,"invalid command (or missing 'device=')">
 	strcnst errmsg3, <07,"require MS-DOS v3.xx or later">
@@ -75,6 +76,21 @@ SpecPath		dw	2 dup (WorkingBuffer, ?)
 	strcnst errmsgb, <07,"too many drivers at a time">
 	strcnst errmsgc, <07,"cannot find environment block">
 ;;	strcnst warnmsg, <07,"installation was rejected",0dh,0ah>
+else
+	strcnst errmsg1, <07,"定義ファイルが読み込めませんでした">
+	strcnst errmsg2, <07,"不正なコマンドです（もしくは device= がない）">
+	strcnst errmsg3, <07,"バージョン3.1以上のDOSに対応しています">
+	strcnst errmsg4, <07,"ドライバのファイル名が不明です">
+	strcnst errmsg5, <07,"ドライバのファイルが読み込めませんでした">
+	strcnst errmsg6, <07,"正しく作成されていないADDDEVコマンドです">
+	strcnst errmsg7, <07,"デバイスドライバ初期化時にエラー発生">
+	strcnst errmsg8, <07,"ブロックデバイスはインストールできません">
+	strcnst	errmsg9, <07,"同じデバイス名の置き換えが多すぎます">
+	strcnst errmsga, <07,"1ファイル内にあるデバイスドライバが多すぎます">
+	strcnst errmsgb, <07,"デバイスドライバが多すぎます">
+	strcnst errmsgc, <07,"環境変数領域の検索に失敗しました">
+;;	strcnst warnmsg, <07,"ドライバはインストールされませんでした",0dh,0ah>
+endif
 
 ermsgptr label word
 	irpc x, <0123456789abcdef>
