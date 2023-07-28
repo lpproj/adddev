@@ -7,4 +7,5 @@
 files.sr text working-tree-encoding=CP932 eol=crlf
 Makefile text working-tree-encoding=CP932 eol=auto
 adddev.man text working-tree-encoding=CP932 eol=crlf
+readme_p.txt text working-tree-encoding=CP932 eol=crlf
 
