@@ -11,7 +11,7 @@ CMD_CHS	equ	'*'
 BETA	equ	' '	;; β版なら 'b' 正式版は ' '
 ADDDEL_AUTHORS	equ	'rusu, TELEPUTE -off-, S_HAY and sava'
 ADDDEL_VER	equ	'2.55'
-ADDDEL_DATE	equ	'(2023-07-25)'
+ADDDEL_DATE	equ	'(2023-07-28)'
 ADDDEL_PATCH	equ	'p2 '
 ADDDEL_EXTRA	equ	ADDDEL_PATCH,
 ADDDEV_ID	equ	'adddev.exe v',ADDDEL_VER
