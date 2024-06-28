@@ -303,6 +303,7 @@ e_not_cont:							; S_HAY
 		push	di
 		push	ds
 		mov	ah,62h
+		msdos
 		mov	cx,80h
 		mov	di,cx
 		mov	ds,bx
