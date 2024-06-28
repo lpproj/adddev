@@ -222,11 +222,26 @@ _proc InitMem
 	push	ds				;Current PSP Seg; S_HAY
 	mov	ax, word ptr ds:[0016h]	;Parent PSP Seg	; lpproj
 	mov	cs:[ParentPSP], ax				; lpproj
+IF 1
+	mov	ax, word ptr ds:[2ch]		;Env       Seg	; lpproj
+	dec	ax				;Env  MCB  Seg	; lpproj
+	push	ax				;Env  MCB  Seg	; S_HAY ; lpproj
+	mov	es, ax				;Env  MCB  Seg	; S_HAY ; lpproj
+	cli					;(to be safe for MCB manipulation)	; lpproj
+	mov	word ptr es:[0001h], 0		;free Env Seg w/o func 49h		; lpproj
+	mov	word ptr ds:[2ch], 0		;remove Env from current PSP		; lpproj
+ELSE
 	mov	es, word ptr ds:[2ch]		;Env       Seg	; S_HAY
 	mov	ah, 49h						; S_HAY
 	msdos							; S_HAY
 	push	ax				;Env  MCB  Seg	; S_HAY
 	mov	es, ax				;Env  MCB  Seg	; S_HAY
+	cli					;(to be safe for MCB manipulation)	; lpproj
+	; NOTE by lpproj:
+	; On genuine PC/MS-DOS, NTVDM, OS/2 MVDM and DR DOS,
+	; when func 49h (free memory block) is successful, it will return
+	; released MCB address to AX. It may be "undocumented" feature.
+ENDIF
 	add	ax, word ptr es:[0003h]				; S_HAY
 	inc	ax				;Code MCB  Seg2	; S_HAY
 	inc	ax				;Code      Seg2	; S_HAY
@@ -270,6 +285,7 @@ _proc InitMem
 	pop	di						; S_HAY
 	pop	si						; S_HAY
 e_not_cont:							; S_HAY
+	sti							; (to be safe) ; lpproj
 	pop	ds						; S_HAY
 
 	push	si
